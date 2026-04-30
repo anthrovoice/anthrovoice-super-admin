@@ -1,12 +1,11 @@
 import { NextRequest, NextResponse } from "next/server"
 import { getToken } from "next-auth/jwt"
-import { DOMAINS } from "@/lib/constants/domains"
+
+const SUPER_ADMIN_EMAIL = "sa@av.com"
 
 const PUBLIC_PATHS = [
     "/login",
     "/api/auth",
-    "/api/webhook",
-    "/api/campaigns",
     "/_next",
     "/favicon.ico",
 ]
@@ -31,40 +30,14 @@ export async function proxy(req: NextRequest) {
                 : "authjs.session-token",
     })
 
+    // Not logged in → login page
     if (!token) {
         return NextResponse.redirect(new URL("/login", req.url))
     }
 
-    const hostname =
-        req.headers.get("x-forwarded-host") ??
-        req.headers.get("host") ??
-        req.nextUrl.hostname
-
-    const email = token.email as string
-    const isSuperAdmin = email === DOMAINS.SUPER_ADMIN_EMAIL
-    const isAdminDomain = hostname === DOMAINS.ADMIN
-    const isPortalDomain = hostname === DOMAINS.PORTAL
-
-    if (isAdminDomain) {
-        // Wrong user on admin domain → send to portal
-        if (!isSuperAdmin) {
-            return NextResponse.redirect(`https://${DOMAINS.PORTAL}/dashboard`)
-        }
-        // Super admin wandered off /super-admin → bring them back
-        if (!pathname.startsWith("/super-admin")) {
-            return NextResponse.redirect(new URL("/super-admin", req.url))
-        }
-    }
-
-    if (isPortalDomain) {
-        // Super admin on portal → send to admin
-        if (isSuperAdmin) {
-            return NextResponse.redirect(`https://${DOMAINS.ADMIN}/super-admin`)
-        }
-        // Portal user trying to access super-admin routes directly
-        if (pathname.startsWith("/super-admin")) {
-            return NextResponse.redirect(new URL("/dashboard", req.url))
-        }
+    // Only sa@av.com is allowed in this app
+    if (token.email !== SUPER_ADMIN_EMAIL) {
+        return NextResponse.redirect(new URL("/login", req.url))
     }
 
     return NextResponse.next()

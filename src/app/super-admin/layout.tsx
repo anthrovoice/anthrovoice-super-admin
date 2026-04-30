@@ -4,7 +4,8 @@ import { TooltipProvider as TP } from "@/components/ui/tooltip"
 import { SuperAdminSidebar } from "@/components/super-admin-sidebar"
 import { auth } from "@/auth"
 import { redirect } from "next/navigation"
-import { DOMAINS } from "@/lib/constants/domains"
+// Super admin email — only this account can access this app
+const SUPER_ADMIN_EMAIL = "sa@av.com"
 
 export default async function SuperAdminLayout({
     children,
@@ -15,8 +16,8 @@ export default async function SuperAdminLayout({
 
     if (!session?.user) redirect("/login")
 
-    if (session.user.email !== DOMAINS.SUPER_ADMIN_EMAIL) {
-        redirect(`https://${DOMAINS.PORTAL}/dashboard`)
+    if (session.user.email !== SUPER_ADMIN_EMAIL) {
+        redirect("/login")
     }
 
     const user = {

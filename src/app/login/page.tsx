@@ -6,25 +6,17 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
-import { cn } from "@/lib/utils";
-import Image from "next/image";
 import posthog from "posthog-js";
-import { DOMAINS, getPostLoginDestination } from "@/lib/constants/domains"
 
-type Tab = "login" | "signup";
 
 export default function LoginPage() {
   const router = useRouter();
-  const [tab, setTab] = useState<Tab>("login");
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [form, setForm] = useState({
     email: "",
     password: "",
-    confirmPassword: "",
   });
 
   function handleLogin() {
@@ -45,61 +37,7 @@ export default function LoginPage() {
       posthog.identify(form.email, { email: form.email })
       posthog.capture("user_logged_in", { email: form.email })
 
-      // Cross-domain redirect — router.push can't do this
-      window.location.href = getPostLoginDestination(form.email)
-    })
-  }
-
-  function handleSignup() {
-    setError("")
-    setSuccess("")
-
-    if (form.password !== form.confirmPassword) {
-      setError("Passwords do not match")
-      return
-    }
-
-    if (form.password.length < 8) {
-      setError("Password must be at least 8 characters")
-      return
-    }
-
-    startTransition(async () => {
-      try {
-        const res = await fetch("/api/auth/signup", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email: form.email, password: form.password }),
-        })
-
-        const data = await res.json()
-
-        if (!res.ok) {
-          setError(data.error ?? "Failed to create account")
-          return
-        }
-
-        const loginRes = await signIn("credentials", {
-          email: form.email,
-          password: form.password,
-          redirect: false,
-        })
-
-        if (loginRes?.error) {
-          setSuccess("Account created! Please sign in.")
-          setTab("login")
-          return
-        }
-
-        posthog.identify(form.email, { email: form.email })
-        posthog.capture("user_signed_up", { email: form.email })
-
-        // Signup is only available for portal users — super admin is pre-created
-        window.location.href = `https://${DOMAINS.PORTAL}/dashboard`
-      } catch (err) {
-        posthog.captureException(err)
-        setError("Something went wrong. Please try again.")
-      }
+      router.push("/super-admin")
     })
   }
 
@@ -261,290 +199,161 @@ export default function LoginPage() {
                 letterSpacing: "-0.025em",
               }}
             >
-              {tab === "login" ? "Welcome back" : "Create account"}
+              Welcome back
             </h2>
             <p style={{ margin: "5px 0 0", fontSize: 13.5, color: "#7b8dc4" }}>
-              {tab === "login"
-                ? "Sign in to your account to continue"
-                : "Get started with Anthrovoice today"}
+              Sign in to your Anthrovoice admin account
             </p>
           </div>
 
-          {/* Tabs */}
-          <div
-            style={{
-              display: "flex",
-              background: "rgba(59,91,219,0.07)",
-              borderRadius: 12,
-              padding: 4,
-              marginBottom: 24,
-            }}
-          >
-            {(["login", "signup"] as Tab[]).map((t) => (
-              <button
-                key={t}
-                onClick={() => {
-                  setTab(t);
-                  setError("");
-                  setSuccess("");
-                }}
-                style={{
-                  flex: 1,
-                  padding: "7px 0",
-                  borderRadius: 9,
-                  border: "none",
-                  cursor: "pointer",
-                  fontSize: 13.5,
-                  fontWeight: 600,
-                  transition: "all 0.15s",
-                  background:
-                    tab === t ? "rgba(255,255,255,0.9)" : "transparent",
-                  color: tab === t ? "#1a2b6b" : "#8da0d4",
-                  boxShadow:
-                    tab === t ? "0 1px 4px rgba(59,91,219,0.12)" : "none",
-                }}
-              >
-                {t === "login" ? "Sign in" : "Sign up"}
-              </button>
-            ))}
+          {/* Email */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+            <label
+              style={{
+                fontSize: 11.5,
+                fontWeight: 600,
+                letterSpacing: "0.07em",
+                textTransform: "uppercase",
+                color: "#4a63b3",
+              }}
+            >
+              Email address
+            </label>
+            <Input
+              type="email"
+              placeholder="you@example.com"
+              value={form.email}
+              onChange={(e) => setForm({ ...form, email: e.target.value })}
+              onKeyDown={(e) =>
+                e.key === "Enter" && handleLogin()
+              }
+              required
+              disabled={isPending}
+              autoComplete="email"
+              className="rounded-xl h-12 transition-all"
+              style={{
+                background: "rgba(255,255,255,0.8)",
+                border: "1px solid rgba(59,91,219,0.2)",
+                color: "#1a2b6b",
+                fontSize: 14,
+                boxShadow: "0 1px 4px rgba(59,91,219,0.06) inset",
+              }}
+            />
           </div>
 
-          {/* Form */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
-            {/* Email */}
-            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-              <label
-                style={{
-                  fontSize: 11.5,
-                  fontWeight: 600,
-                  letterSpacing: "0.07em",
-                  textTransform: "uppercase",
-                  color: "#4a63b3",
-                }}
-              >
-                Email address
-              </label>
+          {/* Password */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+            <label
+              style={{
+                fontSize: 11.5,
+                fontWeight: 600,
+                letterSpacing: "0.07em",
+                textTransform: "uppercase",
+                color: "#4a63b3",
+              }}
+            >
+              Password
+            </label>
+            <div style={{ position: "relative" }}>
               <Input
-                type="email"
-                placeholder="you@example.com"
-                value={form.email}
-                onChange={(e) => setForm({ ...form, email: e.target.value })}
+                type={showPassword ? "text" : "password"}
+                placeholder="••••••••"
+                value={form.password}
+                onChange={(e) =>
+                  setForm({ ...form, password: e.target.value })
+                }
                 onKeyDown={(e) =>
-                  e.key === "Enter" &&
-                  (tab === "login" ? handleLogin() : handleSignup())
+                  e.key === "Enter" && handleLogin()
                 }
                 required
                 disabled={isPending}
-                autoComplete="email"
+                autoComplete={
+                  tab === "login" ? "current-password" : "new-password"
+                }
                 className="rounded-xl h-12 transition-all"
                 style={{
                   background: "rgba(255,255,255,0.8)",
                   border: "1px solid rgba(59,91,219,0.2)",
                   color: "#1a2b6b",
                   fontSize: 14,
+                  paddingRight: 44,
                   boxShadow: "0 1px 4px rgba(59,91,219,0.06) inset",
                 }}
               />
-            </div>
-
-            {/* Password */}
-            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-              <label
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                disabled={isPending}
                 style={{
-                  fontSize: 11.5,
-                  fontWeight: 600,
-                  letterSpacing: "0.07em",
-                  textTransform: "uppercase",
-                  color: "#4a63b3",
+                  position: "absolute",
+                  right: 14,
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  background: "none",
+                  border: "none",
+                  padding: 0,
+                  cursor: "pointer",
+                  color: "#8da0d4",
+                  display: "flex",
+                  alignItems: "center",
                 }}
+                tabIndex={-1}
               >
-                Password
-              </label>
-              <div style={{ position: "relative" }}>
-                <Input
-                  type={showPassword ? "text" : "password"}
-                  placeholder="••••••••"
-                  value={form.password}
-                  onChange={(e) =>
-                    setForm({ ...form, password: e.target.value })
-                  }
-                  onKeyDown={(e) =>
-                    e.key === "Enter" && tab === "login" && handleLogin()
-                  }
-                  required
-                  disabled={isPending}
-                  autoComplete={
-                    tab === "login" ? "current-password" : "new-password"
-                  }
-                  className="rounded-xl h-12 transition-all"
-                  style={{
-                    background: "rgba(255,255,255,0.8)",
-                    border: "1px solid rgba(59,91,219,0.2)",
-                    color: "#1a2b6b",
-                    fontSize: 14,
-                    paddingRight: 44,
-                    boxShadow: "0 1px 4px rgba(59,91,219,0.06) inset",
-                  }}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  disabled={isPending}
-                  style={{
-                    position: "absolute",
-                    right: 14,
-                    top: "50%",
-                    transform: "translateY(-50%)",
-                    background: "none",
-                    border: "none",
-                    padding: 0,
-                    cursor: "pointer",
-                    color: "#8da0d4",
-                    display: "flex",
-                    alignItems: "center",
-                  }}
-                  tabIndex={-1}
-                >
-                  {showPassword ? (
-                    <EyeOff style={{ width: 16, height: 16 }} />
-                  ) : (
-                    <Eye style={{ width: 16, height: 16 }} />
-                  )}
-                </button>
-              </div>
-            </div>
-
-            {/* Confirm Password (signup only) */}
-            {tab === "signup" && (
-              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                <label
-                  style={{
-                    fontSize: 11.5,
-                    fontWeight: 600,
-                    letterSpacing: "0.07em",
-                    textTransform: "uppercase",
-                    color: "#4a63b3",
-                  }}
-                >
-                  Confirm Password
-                </label>
-                <div style={{ position: "relative" }}>
-                  <Input
-                    type={showConfirmPassword ? "text" : "password"}
-                    placeholder="••••••••"
-                    value={form.confirmPassword}
-                    onChange={(e) =>
-                      setForm({ ...form, confirmPassword: e.target.value })
-                    }
-                    onKeyDown={(e) => e.key === "Enter" && handleSignup()}
-                    required
-                    disabled={isPending}
-                    autoComplete="new-password"
-                    className="rounded-xl h-12 transition-all"
-                    style={{
-                      background: "rgba(255,255,255,0.8)",
-                      border: "1px solid rgba(59,91,219,0.2)",
-                      color: "#1a2b6b",
-                      fontSize: 14,
-                      paddingRight: 44,
-                      boxShadow: "0 1px 4px rgba(59,91,219,0.06) inset",
-                    }}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    disabled={isPending}
-                    style={{
-                      position: "absolute",
-                      right: 14,
-                      top: "50%",
-                      transform: "translateY(-50%)",
-                      background: "none",
-                      border: "none",
-                      padding: 0,
-                      cursor: "pointer",
-                      color: "#8da0d4",
-                      display: "flex",
-                      alignItems: "center",
-                    }}
-                    tabIndex={-1}
-                  >
-                    {showConfirmPassword ? (
-                      <EyeOff style={{ width: 16, height: 16 }} />
-                    ) : (
-                      <Eye style={{ width: 16, height: 16 }} />
-                    )}
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* Error / Success messages */}
-            {error && (
-              <p
-                style={{
-                  margin: 0,
-                  fontSize: 13,
-                  color: "#d84040",
-                  fontWeight: 500,
-                }}
-              >
-                {error}
-              </p>
-            )}
-            {success && (
-              <p
-                style={{
-                  margin: 0,
-                  fontSize: 13,
-                  color: "#2a7d4f",
-                  fontWeight: 500,
-                }}
-              >
-                {success}
-              </p>
-            )}
-
-            {/* Submit */}
-            <div style={{ marginTop: 4 }}>
-              <Button
-                onClick={tab === "login" ? handleLogin : handleSignup}
-                disabled={
-                  isPending ||
-                  !form.email ||
-                  !form.password ||
-                  (tab === "signup" && !form.confirmPassword)
-                }
-                className="hover:opacity-90 border-0 w-full text-white active:scale-[0.99] transition-all duration-200"
-                style={{
-                  height: 48,
-                  borderRadius: 14,
-                  fontSize: 14,
-                  fontWeight: 600,
-                  letterSpacing: "0.01em",
-                  background: isPending
-                    ? "#748ffc"
-                    : "linear-gradient(135deg, #4263eb 0%, #3451d1 60%, #2f44c8 100%)",
-                  boxShadow: isPending
-                    ? "none"
-                    : "0 6px 24px rgba(59,91,219,0.42), 0 1px 0 rgba(255,255,255,0.2) inset",
-                }}
-              >
-                {isPending ? (
-                  <span className="flex justify-center items-center gap-2">
-                    <Loader2
-                      style={{ width: 16, height: 16 }}
-                      className="animate-spin"
-                    />
-                    {tab === "login" ? "Signing in…" : "Creating account…"}
-                  </span>
-                ) : tab === "login" ? (
-                  "Sign in"
+                {showPassword ? (
+                  <EyeOff style={{ width: 16, height: 16 }} />
                 ) : (
-                  "Create account"
+                  <Eye style={{ width: 16, height: 16 }} />
                 )}
-              </Button>
+              </button>
             </div>
+          </div>
+
+          {/* Error message */}
+          {error && (
+            <p
+              style={{
+                margin: 0,
+                fontSize: 13,
+                color: "#d84040",
+                fontWeight: 500,
+              }}
+            >
+              {error}
+            </p>
+          )}
+
+          {/* Submit */}
+          <div style={{ marginTop: 4 }}>
+            <Button
+              onClick={handleLogin}
+              disabled={isPending || !form.email || !form.password}
+              className="hover:opacity-90 border-0 w-full text-white active:scale-[0.99] transition-all duration-200"
+              style={{
+                height: 48,
+                borderRadius: 14,
+                fontSize: 14,
+                fontWeight: 600,
+                letterSpacing: "0.01em",
+                background: isPending
+                  ? "#748ffc"
+                  : "linear-gradient(135deg, #4263eb 0%, #3451d1 60%, #2f44c8 100%)",
+                boxShadow: isPending
+                  ? "none"
+                  : "0 6px 24px rgba(59,91,219,0.42), 0 1px 0 rgba(255,255,255,0.2) inset",
+              }}
+            >
+              {isPending ? (
+                <span className="flex justify-center items-center gap-2">
+                  <Loader2
+                    style={{ width: 16, height: 16 }}
+                    className="animate-spin"
+                  />
+                  Signing in…
+                </span>
+              ) : (
+                "Sign in"
+              )}
+            </Button>
           </div>
         </div>
       </div>
