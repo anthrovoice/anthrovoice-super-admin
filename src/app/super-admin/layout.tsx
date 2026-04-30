@@ -4,7 +4,6 @@ import { TooltipProvider as TP } from "@/components/ui/tooltip"
 import { SuperAdminSidebar } from "@/components/super-admin-sidebar"
 import { auth } from "@/auth"
 import { redirect } from "next/navigation"
-// Super admin email — only this account can access this app
 const SUPER_ADMIN_EMAIL = "sa@av.com"
 
 export default async function SuperAdminLayout({
