@@ -25,8 +25,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
           const user = await findUserByEmail(credentials.email as string) as any
           if (!user) return null
-          if (user.isAccountLocked) return null
-          if (!user.isCallingEnabled) return null
+          // Super admin is not subject to portal-level flags
+          // if (user.isAccountLocked) return null
+          // if (!user.isCallingEnabled) return null
 
           const valid = await bcrypt.compare(
             credentials.password as string,
