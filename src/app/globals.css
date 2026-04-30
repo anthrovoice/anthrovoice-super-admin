@@ -1,6 +1,14 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&display=swap');
+
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
+
+@layer base {
+  .bg-surface-page {
+    background-color: #EEF0F8;
+  }
+}
 
 @custom-variant dark (&:is(.dark *));
 
@@ -46,85 +54,114 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+  --color-brand: var(--brand);
+  --color-brand-foreground: var(--brand-foreground);
+  --color-brand-subtle: var(--brand-subtle);
+  --color-brand-muted: var(--brand-muted);
+  --color-surface-page: var(--surface-page);
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-muted: var(--text-muted);
 }
 
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
-}
+  /* ── Core shadcn tokens → Anthrovoice palette ─────────────────────── */
+  --background: #FFFFFF;
+  /* white cards, dialogs        */
+  --foreground: #2A2F45;
+  /* av-slate — primary text      */
 
-.dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --card: #FFFFFF;
+  --card-foreground: #2A2F45;
+
+  --popover: #FFFFFF;
+  --popover-foreground: #2A2F45;
+
+  --primary: #2C54D9;
+  /* av-cobalt — buttons, links   */
+  --primary-foreground: #FFFFFF;
+
+  --secondary: #EEF0F8;
+  /* av-cloud — secondary surfaces */
+  --secondary-foreground: #2A2F45;
+
+  --muted: #EEF0F8;
+  /* av-cloud                     */
+  --muted-foreground: #5A6380;
+  /* av-steel — secondary text    */
+
+  --accent: #E8EDFB;
+  /* av-cobalt-pale — hover tints */
+  --accent-foreground: #2C54D9;
+  /* av-cobalt                    */
+
+  --destructive: #FF5C38;
+  /* av-signal                    */
+
+  --border: #D8DDEE;
+  /* av-mist                      */
+  --input: #D8DDEE;
+  /* av-mist                      */
+  --ring: #2C54D9;
+  /* av-cobalt focus ring         */
+  --radius: 0.625rem;
+
+  /* ── Sidebar → Midnight as per brand rules ─────────────────────────── */
+  --sidebar: #0D1A3E;
+  /* av-midnight                  */
+  --sidebar-foreground: #A8B0CC;
+  /* av-fog — nav text            */
+  --sidebar-primary: #2C54D9;
+  /* av-cobalt                    */
+  --sidebar-primary-foreground: #FFFFFF;
+  /* --sidebar-accent: rgba(44, 84, 217, 0.15); */
+  --sidebar-accent: rgba(44, 84, 217, 0.20);
+  /* active item bg */
+  --sidebar-accent-foreground: #FFFFFF;
+  /* active item text             */
+  /* --sidebar-border: rgba(216, 221, 238, 0.12); */
+  --sidebar-border: rgba(255, 255, 255, 0.08);
+  --sidebar-ring: #2C54D9;
+
+  /* ── Chart tokens ───────────────────────────────────────────────────── */
+  --chart-1: #2C54D9;
+  --chart-2: #4B72F0;
+  --chart-3: #1A9B8A;
+  --chart-4: #C8A850;
+  --chart-5: #E8EDFB;
+
+  /* ── Brand tokens ───────────────────────────────────────────────────── */
+  --brand: #2C54D9;
+  --brand-foreground: #FFFFFF;
+  --brand-subtle: #E8EDFB;
+  --brand-muted: #4B72F0;
+
+  /* ── Semantic surface + text ────────────────────────────────────────── */
+  /* --surface-page: #EEF0F8; */
+  --surface-page: #E8EDF6;
+
+  /* av-cloud — page bg           */
+  --text-primary: #2A2F45;
+  /* av-slate                     */
+  --text-secondary: #5A6380;
+  /* av-steel                     */
+  --text-muted: #A8B0CC;
+  /* av-fog                       */
+
+  --font-sans: 'DM Sans', system-ui, sans-serif;
 }
 
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
+    font-family: var(--font-sans);
   }
+
   html {
-    @apply font-sans;
+    font-family: var(--font-sans);
   }
 }
