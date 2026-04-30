@@ -17,6 +17,8 @@ function isPublicPath(pathname: string): boolean {
 export async function proxy(req: NextRequest) {
     const { pathname } = req.nextUrl
 
+
+
     if (isPublicPath(pathname)) {
         return NextResponse.next()
     }
