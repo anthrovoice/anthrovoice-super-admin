@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
-import posthog from "posthog-js";
 
 
 export default function LoginPage() {
@@ -30,12 +29,8 @@ export default function LoginPage() {
 
       if (res?.error) {
         setError("Invalid email or password")
-        posthog.capture("login_failed", { email: form.email })
         return
       }
-
-      posthog.identify(form.email, { email: form.email })
-      posthog.capture("user_logged_in", { email: form.email })
 
       router.push("/super-admin")
     })
@@ -267,9 +262,7 @@ export default function LoginPage() {
                 }
                 required
                 disabled={isPending}
-                autoComplete={
-                  tab === "login" ? "current-password" : "new-password"
-                }
+                autoComplete="current-password"
                 className="rounded-xl h-12 transition-all"
                 style={{
                   background: "rgba(255,255,255,0.8)",
